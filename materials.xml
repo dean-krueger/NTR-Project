@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<materials>
+  <material id="6" name="graphite_fuel_70U_15C" >
+    <density value="2.597669" units="g/cc" />
+    <nuclide name="C12" ao="9.2203e-01" />
+    <nuclide name="C13" ao="9.9725e-03" />
+    <nuclide name="Zr90" ao="3.3949e-02" />
+    <nuclide name="Zr91" ao="7.4034e-03" />
+    <nuclide name="Zr92" ao="1.1316e-02" />
+    <nuclide name="Zr94" ao="1.1468e-02" />
+    <nuclide name="Zr96" ao="1.8476e-03" />
+    <nuclide name="U235" ao="1.8698e-03" />
+    <nuclide name="U238" ao="1.3896e-04" />
+  </material>
+  <material id="4" name="Uranium_cabide_0.93" >
+    <density value="13.6" units="g/cc" />
+    <nuclide name="C12" ao="9.8930e-01" />
+    <nuclide name="C13" ao="1.0700e-02" />
+    <nuclide name="U235" ao="9.3082e-01" />
+    <nuclide name="U238" ao="6.9177e-02" />
+  </material>
+  <material id="5" name="zirconium_carbide" >
+    <density value="6.59" units="g/cc" />
+    <nuclide name="C12" ao="9.8930e-01" />
+    <nuclide name="C13" ao="1.0700e-02" />
+    <nuclide name="Zr90" ao="5.1450e-01" />
+    <nuclide name="Zr91" ao="1.1220e-01" />
+    <nuclide name="Zr92" ao="1.7150e-01" />
+    <nuclide name="Zr94" ao="1.7380e-01" />
+    <nuclide name="Zr96" ao="2.8000e-02" />
+  </material>
+  <material id="2" name="Zirconium" >
+    <density value="6.49" units="g/cc" />
+    <nuclide name="Zr90" ao="5.1450e-01" />
+    <nuclide name="Zr91" ao="1.1220e-01" />
+    <nuclide name="Zr92" ao="1.7150e-01" />
+    <nuclide name="Zr94" ao="1.7380e-01" />
+    <nuclide name="Zr96" ao="2.8000e-02" />
+  </material>
+  <material id="1" name="graphite_carbon" >
+    <density value="2.1" units="g/cc" />
+    <nuclide name="C12" ao="9.8930e-01" />
+    <nuclide name="C13" ao="1.0700e-02" />
+  </material>
+</materials>

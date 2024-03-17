@@ -1,1 +1,4 @@
 *.pynb_checkpoints/
+*.xml
+!materials.xml
+*.pkl
