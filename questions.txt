@@ -1,1 +1,3 @@
 What does the orientation='x/y' on openmc.hexagonalPrism() do? It seems like it's not working.
+
+S alpha beta for UC2??

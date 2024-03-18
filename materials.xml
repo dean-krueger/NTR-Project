@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<materials>
+  <material id="9" name="Hydrogen STP" >
+    <density value="0.00009" units="g/cc" />
+    <nuclide name="H1" ao="9.9988e-01" />
+    <nuclide name="H2" ao="1.1500e-04" />
+  </material>
+  <material id="6" name="graphite_fuel_70U_15C" >
+    <density value="2.597669" units="g/cc" />
+    <nuclide name="C12" ao="9.2203e-01" />
+    <nuclide name="C13" ao="9.9725e-03" />
+    <nuclide name="Zr90" ao="3.3949e-02" />
+    <nuclide name="Zr91" ao="7.4034e-03" />
+    <nuclide name="Zr92" ao="1.1316e-02" />
+    <nuclide name="Zr94" ao="1.1468e-02" />
+    <nuclide name="Zr96" ao="1.8476e-03" />
+    <nuclide name="U235" ao="1.8698e-03" />
+    <nuclide name="U238" ao="1.3896e-04" />
+  </material>
+  <material id="4" name="Uranium_cabide_0.93" >
+    <density value="13.6" units="g/cc" />
+    <nuclide name="C12" ao="9.8930e-01" />
+    <nuclide name="C13" ao="1.0700e-02" />
+    <nuclide name="U235" ao="9.3082e-01" />
+    <nuclide name="U238" ao="6.9177e-02" />
+  </material>
+  <material id="5" name="zirconium_carbide" >
+    <density value="6.59" units="g/cc" />
+    <nuclide name="C12" ao="9.8930e-01" />
+    <nuclide name="C13" ao="1.0700e-02" />
+    <nuclide name="Zr90" ao="5.1450e-01" />
+    <nuclide name="Zr91" ao="1.1220e-01" />
+    <nuclide name="Zr92" ao="1.7150e-01" />
+    <nuclide name="Zr94" ao="1.7380e-01" />
+    <nuclide name="Zr96" ao="2.8000e-02" />
+  </material>
+  <material id="8" name="inconel-718" >
+    <density value="8.22" units="g/cc" />
+    <nuclide name="Al27" ao="1.3015e-02" />
+    <nuclide name="Ti46" ao="9.0787e-04" />
+    <nuclide name="Ti47" ao="8.1873e-04" />
+    <nuclide name="Ti48" ao="8.1125e-03" />
+    <nuclide name="Ti49" ao="5.9534e-04" />
+    <nuclide name="Ti50" ao="5.7003e-04" />
+    <nuclide name="Cr50" ao="9.2925e-03" />
+    <nuclide name="Cr52" ao="1.7920e-01" />
+    <nuclide name="Cr53" ao="2.0319e-02" />
+    <nuclide name="Cr54" ao="5.0579e-03" />
+    <nuclide name="Fe54" ao="1.1639e-02" />
+    <nuclide name="Fe56" ao="1.8271e-01" />
+    <nuclide name="Fe57" ao="4.2195e-03" />
+    <nuclide name="Fe58" ao="5.6153e-04" />
+    <nuclide name="Ni58" ao="3.5639e-01" />
+    <nuclide name="Ni60" ao="1.3728e-01" />
+    <nuclide name="Ni61" ao="5.9675e-03" />
+    <nuclide name="Ni62" ao="1.9028e-02" />
+    <nuclide name="Ni64" ao="4.8451e-03" />
+    <nuclide name="Nb93" ao="1.5749e-02" />
+    <nuclide name="Mo94" ao="1.6742e-03" />
+    <nuclide name="Mo95" ao="2.8983e-03" />
+    <nuclide name="Mo96" ao="3.0502e-03" />
+    <nuclide name="Mo97" ao="1.7566e-03" />
+    <nuclide name="Mo98" ao="4.4628e-03" />
+    <nuclide name="Mo100" ao="1.7968e-03" />
+    <nuclide name="Ta180" ao="9.7115e-07" />
+    <nuclide name="Ta181" ao="8.0852e-03" />
+  </material>
+  <material id="2" name="Zirconium" >
+    <density value="6.49" units="g/cc" />
+    <nuclide name="Zr90" ao="5.1450e-01" />
+    <nuclide name="Zr91" ao="1.1220e-01" />
+    <nuclide name="Zr92" ao="1.7150e-01" />
+    <nuclide name="Zr94" ao="1.7380e-01" />
+    <nuclide name="Zr96" ao="2.8000e-02" />
+  </material>
+  <material id="7" name="zirconium_hydride_II" >
+    <density value="5.6" units="g/cc" />
+    <nuclide name="H1" ao="1.9998e+00" />
+    <nuclide name="H2" ao="2.3000e-04" />
+    <nuclide name="Zr90" ao="5.1450e-01" />
+    <nuclide name="Zr91" ao="1.1220e-01" />
+    <nuclide name="Zr92" ao="1.7150e-01" />
+    <nuclide name="Zr94" ao="1.7380e-01" />
+    <nuclide name="Zr96" ao="2.8000e-02" />
+  </material>
+  <material id="1" name="graphite_carbon" >
+    <density value="2.1" units="g/cc" />
+    <nuclide name="C12" ao="9.8930e-01" />
+    <nuclide name="C13" ao="1.0700e-02" />
+  </material>
+</materials>
