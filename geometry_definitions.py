@@ -8,7 +8,6 @@ import openmc
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 def get_material(materials, name):
     """
     searches materials object for a matching name and returns it
@@ -16,7 +15,6 @@ def get_material(materials, name):
     for material in materials:
         if material.name == name:
             return material
-
 
 def fuel_assembly(propellent, clad, fuel):
     # build a single element
