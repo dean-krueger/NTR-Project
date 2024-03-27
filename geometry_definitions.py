@@ -73,8 +73,6 @@ def fuel_assembly(propellent, clad, fuel):
 
 def tie_tube(hydrogen_inner, hydrogen_outer, inconel, ZrH, ZrC, ZrC_insulator, graphite):
     
-    insulator = openmc.Material.mix_materials()
-    
     #THIS IS A GUESS BASED ON THE FUEL ELEMENT
     assembly_cladding_thickness = 0.005
     
