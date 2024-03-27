@@ -2,3 +2,4 @@
 *.xml
 !materials.xml
 *.pkl
+*.png

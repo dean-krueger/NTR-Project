@@ -86,6 +86,13 @@ def inconel_718():
     inconel.metadata['mat_number'] = 8
     return inconel
 
+def zirconium_carbide_insulator(ZrC):
+    mix = MultiMaterial({ZrC:1})
+    insulator = mix.mix_by_volume()
+    insulator.density = ZrC.density/2
+    insulator.metadata['mat_number'] = 10
+    return insulator
+
 
 def mix_UZrC_graphite(ZrC_wo, UC_wo, C_wo, void_percent, U_enrichment=0.93):
     """
@@ -126,6 +133,7 @@ def main():
     ZrH2 = zirconium_hydride_II()
     Inc_718 = inconel_718()
     H_STP = hydrogen_STP()
+    ZrC_insulator = zirconium_carbide_insulator(ZrC)
 
     # print em out and have a look
     print(C)
@@ -137,6 +145,7 @@ def main():
     print(ZrH2)
     print(Inc_718)
     print(H_STP)
+    print(ZrC_insulator)
 
     # make the library and export to xml
     lib = MaterialLibrary()
@@ -149,6 +158,7 @@ def main():
     lib['zirconium_hydride_II'] = ZrH2
     lib['inconel-718'] = Inc_718
     lib['Hydrogen STP'] = H_STP
+    lib['zirconium_carbide_insulator'] = ZrC_insulator
 
     lib.write_openmc('materials.xml')
 
