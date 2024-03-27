@@ -1,4 +1,4 @@
-*.pynb_checkpoints/
+*.ipynb_checkpoints/
 *.xml
 !materials.xml
 *.pkl

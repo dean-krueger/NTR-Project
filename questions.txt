@@ -1,3 +1,7 @@
 What does the orientation='x/y' on openmc.hexagonalPrism() do? It seems like it's not working.
 
 S alpha beta for UC2??
+
+What is the proper way to define a few geometries and then fill them with materials? Ie. what is
+the correct structure for a full-scale openmc run? Do you make your geometries and materials
+separate and then import them?
