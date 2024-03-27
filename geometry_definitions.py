@@ -1,4 +1,3 @@
-"""Import Statements"""
 import openmc
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,23 +17,26 @@ def fuel_assembly(propellent, clad, fuel):
     propellant_channel_inner_cladding_thickness = 0.01
     propellant_channel_pitch = 0.4089
     assembly_cladding_thickness = 0.005
-    assembly_edge_length = 3*propellant_channel_pitch+2*(assembly_cladding_thickness*np.tan(30*np.pi/180))
+    flat_to_flat = 1.905
+    flat_to_flat_fuel = flat_to_flat - assembly_cladding_thickness
+    assembly_edge_length = 0.5*flat_to_flat/np.cos(np.deg2rad(30))
+    fuel_edge_length = 0.5*flat_to_flat_fuel/np.cos(np.deg2rad(30))
 
     # OpenMC Geometry
     borehole = openmc.ZCylinder(r=propellant_channel_diameter/2)
     borehole_inner_cladding = openmc.ZCylinder(r=propellant_channel_diameter/2 \
                                                         -propellant_channel_inner_cladding_thickness)
-    fuel_assembly = openmc.model.HexagonalPrism(orientation='x', edge_length = 3*propellant_channel_pitch)
+    fuel_assembly = openmc.model.HexagonalPrism(orientation='x', edge_length = fuel_edge_length)
     fuel_assembly_cladding = openmc.model.HexagonalPrism(orientation='x', edge_length=assembly_edge_length)
 
     # OpenMC Cells and Universes
     propellant_channel_interior = openmc.Cell(region = -borehole_inner_cladding, fill=propellent)
-    propellant_channel_cladding = openmc.Cell(region = -borehole, fill=clad)
+    propellant_channel_cladding = openmc.Cell(region = -borehole & +borehole_inner_cladding, fill=clad)
     propellant_channel_outer_fuel = openmc.Cell(region = +borehole, fill=fuel)
     propellant_channel = openmc.Universe(cells = (propellant_channel_interior, propellant_channel_cladding, \
                                                 propellant_channel_outer_fuel))
-    fuel_assembly_cell = openmc.Cell(region=-fuel_assembly)
-    fuel_assembly_cladding_cell = openmc.Cell(region=+fuel_assembly & -fuel_assembly_cladding) 
+    fuel_assembly_cell = openmc.Cell(region=-fuel_assembly, fill=fuel)
+    fuel_assembly_cladding_cell = openmc.Cell(region=+fuel_assembly & -fuel_assembly_cladding, fill=clad) 
 
     outer_lattice_universe = openmc.Universe(cells=[fuel_assembly_cell])
 
@@ -48,7 +50,7 @@ def fuel_assembly(propellent, clad, fuel):
 
     # Full Fuel Asembly
     fuel_assembly_lattice_cell = openmc.Cell(region = -fuel_assembly, fill = fuel_lattice)
-    fuel_assembly_universe = openmc.Universe(cells=[fuel_assembly_cladding_cell,\
+    fuel_assembly_universe = openmc.Universe(cells=[fuel_assembly_cladding_cell,
                                                     fuel_assembly_lattice_cell])
 
     return fuel_assembly_universe
@@ -63,9 +65,9 @@ def main():
     graphite_fuel = get_material(materials, "graphite_fuel_70U_15C")
     
     geometry = openmc.Geometry(fuel_assembly(hydrogen, ZrC, graphite_fuel))
-    geometry.plot(pixels =(400,400), width = (3,3), color_by='material')
+    geometry.plot(pixels =(2000,2000), width = (3,3), color_by='material')
     plt.savefig('fuel_element_by_material.png')
-    geometry.plot(pixels =(400,400), width = (3,3), color_by='cell')
+    geometry.plot(pixels =(2000,2000), width = (3,3), color_by='cell')
     plt.savefig('fuel_element_by_cell.png')
     
     
