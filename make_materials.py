@@ -87,8 +87,10 @@ def inconel_718():
     return inconel
 
 def zirconium_carbide_insulator(ZrC):
-    insulator = ZrC
+    mix = MultiMaterial({ZrC:1})
+    insulator = mix.mix_by_volume()
     insulator.density = ZrC.density/2
+    insulator.metadata['mat_number'] = 10
     return insulator
 
 

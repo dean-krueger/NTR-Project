@@ -34,6 +34,16 @@
     <nuclide name="Zr94" ao="1.7380e-01" />
     <nuclide name="Zr96" ao="2.8000e-02" />
   </material>
+  <material id="10" name="zirconium_carbide_insulator" >
+    <density value="3.295" units="g/cc" />
+    <nuclide name="C12" ao="4.9465e-01" />
+    <nuclide name="C13" ao="5.3500e-03" />
+    <nuclide name="Zr90" ao="2.5725e-01" />
+    <nuclide name="Zr91" ao="5.6100e-02" />
+    <nuclide name="Zr92" ao="8.5750e-02" />
+    <nuclide name="Zr94" ao="8.6900e-02" />
+    <nuclide name="Zr96" ao="1.4000e-02" />
+  </material>
   <material id="8" name="inconel-718" >
     <density value="8.22" units="g/cc" />
     <nuclide name="Al27" ao="1.3015e-02" />
