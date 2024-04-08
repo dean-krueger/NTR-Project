@@ -16,7 +16,7 @@ def get_material(materials, name):
         if material.name == name:
             return material
 
-def fuel_assembly(propellent, clad, fuel):
+def fuel_assembly(propellent, clad, fuel, boundary_type):
     # build a single element
     # Measurements from Schnitzler et al. 2012
     propellant_channel_diameter = 0.2565
@@ -33,17 +33,20 @@ def fuel_assembly(propellent, clad, fuel):
     borehole_inner_cladding = openmc.ZCylinder(r=propellant_channel_diameter/2
                                                - propellant_channel_inner_cladding_thickness)
     fuel_assembly = openmc.model.HexagonalPrism(
-        orientation='x', edge_length=fuel_edge_length)
+        orientation='x', edge_length=fuel_edge_length, boundary_type=boundary_type)
     fuel_assembly_cladding = openmc.model.HexagonalPrism(
         orientation='x', edge_length=assembly_edge_length)
 
     # OpenMC Cells and Universes
     propellant_channel_interior = openmc.Cell(
-        region=-borehole_inner_cladding, fill=propellent)
+        region=-borehole_inner_cladding, fill=propellent, name='borehole')
     propellant_channel_cladding = openmc.Cell(
-        region=-borehole & +borehole_inner_cladding, fill=clad)
-    propellant_channel_outer_fuel = openmc.Cell(region=+borehole, fill=fuel)
-    propellant_channel = openmc.Universe(cells=(propellant_channel_interior, propellant_channel_cladding,
+        region=-borehole & +borehole_inner_cladding, fill=clad,
+        name='borehole clad')
+    propellant_channel_outer_fuel = openmc.Cell(region=+borehole, fill=fuel, 
+                                                name='fuel')
+    propellant_channel = openmc.Universe(cells=(propellant_channel_interior, 
+                                                propellant_channel_cladding,
                                                 propellant_channel_outer_fuel))
     fuel_assembly_cell = openmc.Cell(region=-fuel_assembly, fill=fuel)
     fuel_assembly_cladding_cell = openmc.Cell(
