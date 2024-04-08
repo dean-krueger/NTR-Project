@@ -20,8 +20,8 @@ fuel_element = gd.fuel_assembly(propellent, clad, fuel,'reflective')
 geometry = openmc.Geometry(fuel_element)
 
 particles = 500
-inactive = 100
-batches = 300
+inactive = 10
+batches = 30
 
 settings = openmc.Settings()
 settings.batches = batches
@@ -33,7 +33,19 @@ source.angle = openmc.stats.Isotropic()
 source.energy = openmc.stats.Watt()
 settings.source = source
 
-model = openmc.Model(materials=materials, geometry=geometry, settings=settings)
+#filters
+fuel_cells_filter = openmc.CellFilter([3,4])
+
+#tallies
+heating_tally = openmc.Tally(name='heating tally')
+heating_tally.filters = [fuel_cells_filter]
+heating_tally.scores = ['heating']
+
+tallies = openmc.Tallies([heating_tally])
+
+model = openmc.Model(materials=materials, geometry=geometry, settings=settings,
+                     tallies=tallies)
+
 model.update_cell_temperatures(list(geometry.get_all_cells().keys()),2500)
 
 model.export_to_model_xml()
