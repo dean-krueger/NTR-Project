@@ -24,6 +24,15 @@
     <nuclide name="U235" ao="9.3082e-01" />
     <nuclide name="U238" ao="6.9177e-02" />
   </material>
+  <material id="14" name="copper_boron" >
+    <density value="5.73" units="g/cc" />
+    <nuclide name="B10" ao="9.8073e-02" />
+    <nuclide name="B11" ao="3.9476e-01" />
+    <nuclide name="C12" ao="1.2189e-01" />
+    <nuclide name="C13" ao="1.3183e-03" />
+    <nuclide name="Cu63" ao="2.6551e-01" />
+    <nuclide name="Cu65" ao="1.1845e-01" />
+  </material>
   <material id="5" name="zirconium_carbide" >
     <density value="6.59" units="g/cc" />
     <nuclide name="C12" ao="9.8930e-01" />
@@ -33,6 +42,10 @@
     <nuclide name="Zr92" ao="1.7150e-01" />
     <nuclide name="Zr94" ao="1.7380e-01" />
     <nuclide name="Zr96" ao="2.8000e-02" />
+  </material>
+  <material id="11" name="Beryllium" >
+    <density value="1.85" units="g/cc" />
+    <nuclide name="Be9" ao="1.0000e+00" />
   </material>
   <material id="10" name="zirconium_carbide_insulator" >
     <density value="3.295" units="g/cc" />
