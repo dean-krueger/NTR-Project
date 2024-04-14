@@ -128,6 +128,102 @@ def tie_tube(hydrogen_inner, hydrogen_outer, inconel, ZrH, ZrC, ZrC_insulator, g
     
     return tie_tube_assembly_universe
 
+def reflector(poison_material, reflector_material, bolt_material,
+                           reflector_id = 67.31,reflector_thickness = 14.7,
+                           drum_radius = 12.7/2, poison_thickness = 0.65,
+                           poison_angle_span = 120, 
+                           sector_bolt_diameter = 1.057, 
+                           drum_bolt_diameter = 0.478,
+                           clocking = 0):
+
+    def get_poison_planes(clocking_angle, poison_angle):
+        #return 2 planes +/- poison_angle/2 from the clocking angle
+
+        angle1 = np.deg2rad(clocking_angle-poison_angle/2)
+        angle2 = np.deg2rad(clocking_angle+poison_angle/2)
+
+        plane1 = openmc.Plane.from_points((0,0,0),(0,0,1),(np.cos(angle1),
+                                                           np.sin(angle1),
+                                                           0))
+        
+        plane2 = openmc.Plane.from_points((0,0,0),(0,0,1),(np.cos(angle2),
+                                                           np.sin(angle2),
+                                                           0))
+
+        return plane1, plane2
+    
+    def get_12_regions(region):
+        
+        # Turn 1 drum/poison region into 12
+        full_region = region
+
+        angles = np.linspace(30, 360, 11)
+
+        for angle in angles:
+            full_region = (full_region | 
+                                region.rotate((0,0,-angle)))
+    
+
+        return full_region
+
+    reflector_od = reflector_id + 2*reflector_thickness
+    drum_od = openmc.ZCylinder(r=drum_radius)
+    poison_id = openmc.ZCylinder(r=drum_od.r-poison_thickness)
+    poison_plane_1, poison_plane_2 = get_poison_planes(clocking,
+                                                       poison_angle_span)
+    drum_tie_bolt = openmc.ZCylinder(r=drum_bolt_diameter/2)
+    sector_tie_bolt_cyl = openmc.ZCylinder(r=sector_bolt_diameter/2)
+
+    sector_bolt1_region = -sector_tie_bolt_cyl
+    sector_bolt2_region = -sector_tie_bolt_cyl
+
+    sector_bolt1_region = sector_bolt1_region.translate((-reflector_id/2-2/3*reflector_thickness,0,0))
+    sector_bolt2_region = sector_bolt2_region.translate((-reflector_id/2-1/3*reflector_thickness,0,0))
+
+    sector_bolt_region = sector_bolt1_region | sector_bolt2_region
+
+    sector_bolt_region = sector_bolt_region.rotate((0,0,15))
+    poison_region = +poison_id & -drum_od & +poison_plane_1 & -poison_plane_2
+    drum_region = -drum_od & +drum_tie_bolt & ~poison_region
+    drum_bolt_region = -drum_tie_bolt
+
+    poison_region = poison_region.translate((-(reflector_id+reflector_od)/4,
+                                             0,
+                                             0))
+    drum_region = drum_region.translate((-(reflector_id+reflector_od)/4,
+                                         0,
+                                         0))
+    
+    drum_bolt_region = drum_bolt_region.translate((-(reflector_id+reflector_od)/4,
+                                         0,
+                                         0))
+
+    drum_region = get_12_regions(drum_region)
+    poison_region = get_12_regions(poison_region)
+    sector_bolt_region = get_12_regions(sector_bolt_region)
+    drum_bolt_region = get_12_regions(drum_bolt_region)
+
+    poison_cell = openmc.Cell(region=poison_region, fill=poison_material)
+    drum_cell = openmc.Cell(region=drum_region, fill=reflector_material)
+    sector_bolt_cell = openmc.Cell(region=sector_bolt_region, fill=bolt_material)
+    drum_bolt_cell = openmc.Cell(region=drum_bolt_region, fill = bolt_material)
+
+    reflector_inner_surface = openmc.ZCylinder(r=reflector_id/2)
+    reflector_outer_surface = openmc.ZCylinder(r=reflector_od/2)
+
+    reflector_region = (-reflector_outer_surface & 
+                        +reflector_inner_surface & 
+                        ~drum_region & ~poison_region)
+
+    reflector_cell = openmc.Cell(region=reflector_region, fill=reflector_material)
+
+    reflector_universe = openmc.Universe(cells=[reflector_cell, 
+                                                drum_cell, 
+                                                poison_cell,
+                                                sector_bolt_cell,
+                                                drum_bolt_cell])
+    
+    return reflector_universe
 
 def main():
     # plot a sample geometry by material type
@@ -141,6 +237,8 @@ def main():
     inconel = get_material(materials, "inconel-718")
     ZrC_insulator = get_material(materials,'zirconium_carbide_insulator')
     graphite = get_material(materials, 'graphite_carbon')
+    poison = get_material(materials, 'copper_boron')
+    beryllium = get_material(materials, 'Beryllium')
 
     fuel_assembly_geom = openmc.Geometry(fuel_assembly(hydrogen, ZrC, graphite_fuel))
     fuel_assembly_geom.plot(pixels=(800, 800), width=(3, 3), color_by='material')
@@ -154,6 +252,11 @@ def main():
     tie_tube_geom.plot(pixels=(800, 800), width=(3, 3), color_by='cell')
     plt.savefig('tie_tube_element_by_cell.png')
 
-
+    reflector_univ = reflector(poison, beryllium, inconel)
+    reflector_univ.plot(pixels=(800, 800), width=(100, 100), color_by='material')
+    plt.savefig('reflector_by_material.png')
+    reflector_univ.plot(pixels=(800, 800), width=(100, 100), color_by='cell')
+    plt.savefig('reflector_by_cell.png')
+    
 if __name__ == '__main__':
     main()

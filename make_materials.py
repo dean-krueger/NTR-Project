@@ -46,6 +46,44 @@ def uranium(enrichment):
     U.metadata['mat_number'] = 3
     return U
 
+def beryllium():
+    nucvec = {40000: 1}
+    Be = Material(nucvec)
+    Be = Be.expand_elements()
+    Be.density = 1.85 #g/cm3
+    Be.metadata['mat_number'] = 11
+    return Be
+
+def copper():
+    nucvec = {290000: 1}
+    Cu = Material(nucvec)
+    Cu = Cu.expand_elements()
+    Cu.density = 8.96 #g/cm3
+    Cu.metadata['mat_number'] = 12
+    return Cu
+
+def boron():
+    nucvec = {50000: 1}
+    B = Material(nucvec)
+    B = B.expand_elements()
+    B.density = 2.3 #g/cm3
+    B.metadata['mat_number'] = 13
+    return B
+
+def copper_boron(Cu, B, C):
+    
+    # ref https://www.osti.gov/servlets/purl/1067489
+    B4C = Material()
+    B4C.from_atom_frac({B:4,C:1})
+    B4C.density = 2.5 #g/cm3
+
+    mix = MultiMaterial({Cu:0.5, B4C:0.5})
+
+    CuB = mix.mix_by_volume()
+    CuB.metadata['mat_number'] = 14
+
+    return CuB
+
 
 def uranium_carbide(U, C):
     UC = Material()
@@ -127,6 +165,9 @@ def main():
     C = carbon()
     Zr = zirconium()
     U = uranium(0.93)
+    Be = beryllium()
+    Cu = copper()
+    B = boron()
     ZrC = zirconium_carbide(Zr, C)
     UC = uranium_carbide(U, C)
     UZrC = mix_UZrC_graphite(38.4, 2.8, 58.5, 0.117)
@@ -134,11 +175,13 @@ def main():
     Inc_718 = inconel_718()
     H_STP = hydrogen_STP()
     ZrC_insulator = zirconium_carbide_insulator(ZrC)
+    CuB = copper_boron(Cu, B, C)
 
     # print em out and have a look
     print(C)
     print(Zr)
     print(U)
+    print(Be)
     print(ZrC)
     print(UC)
     print(UZrC)
@@ -146,6 +189,7 @@ def main():
     print(Inc_718)
     print(H_STP)
     print(ZrC_insulator)
+    print(CuB)
 
     # make the library and export to xml
     lib = MaterialLibrary()
@@ -159,6 +203,8 @@ def main():
     lib['inconel-718'] = Inc_718
     lib['Hydrogen STP'] = H_STP
     lib['zirconium_carbide_insulator'] = ZrC_insulator
+    lib['Beryllium'] = Be
+    lib['copper_boron'] = CuB
 
     lib.write_openmc('materials.xml')
 
