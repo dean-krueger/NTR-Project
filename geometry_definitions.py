@@ -128,6 +128,104 @@ def tie_tube(hydrogen_inner, hydrogen_outer, inconel, ZrH, ZrC, ZrC_insulator, g
     
     return tie_tube_assembly_universe
 
+def beryllium_assembly(Be, ZrC):
+    
+    # Measurements from Schnitzler et al. 2012
+    assembly_cladding_thickness = 0.005
+    flat_to_flat = 1.905
+    flat_to_flat_inner = flat_to_flat-2*assembly_cladding_thickness
+    assembly_edge_length = 0.5*flat_to_flat/np.cos(np.deg2rad(30))
+    inner_edge_length = 0.5*flat_to_flat_inner/np.cos(np.deg2rad(30))
+    
+    # OpenMC Geometry:
+    beryllium_assembly = openmc.model.HexagonalPrism(orientation='x',
+                                                    edge_length=inner_edge_length)
+    beryllium_assembly_cladding = openmc.model.HexagonalPrism(orientation='x',
+                                                             edge_length=assembly_edge_length)
+    
+    
+    # Cells and Universes:
+    beryllium_assembly_cell = openmc.Cell(region=-beryllium_assembly, fill=Be)
+    beryllium_assembly_cladding_cell = openmc.Cell(
+        region=+beryllium_assembly & -beryllium_assembly_cladding, fill=ZrC)
+    
+    beryllium_assembly_universe = openmc.Universe(cells=[beryllium_assembly_cell, beryllium_assembly_cladding_cell])
+    
+    return beryllium_assembly_universe
+
+def core_lattice_SNRE(tie_tube_universe, fuel_assembly_universe, beryllium_universe):
+    
+    # Measurements from Schnitzler et al. 2012
+    assembly_pitch = 1.905
+    
+    
+    # Makes things easier to type:
+    TT = tie_tube_universe
+    FA = fuel_assembly_universe
+    BE = beryllium_universe
+    
+    core_lattice = openmc.HexLattice()
+    core_lattice.orientation = "y"
+    core_lattice.pitch = (assembly_pitch,)
+    core_lattice.universes = [[BE, BE, BE, BE, BE, BE, BE, FA, FA, FA, FA, BE, BE, BE, BE, BE, BE]*6,
+                              [BE, BE, BE, FA, FA, FA, FA, FA, TT, FA, FA, FA, FA, FA, BE, BE]*6,
+                              [BE, FA, FA, TT, FA, FA, TT, FA, FA, TT, FA, FA, TT, FA, FA]*6,
+                              [FA, TT, FA, FA, TT, FA, FA, TT, FA, FA, TT, FA, FA, TT]*6,
+                              [FA, FA, TT, FA, FA, TT, FA, FA, TT, FA, FA, TT, FA]*6,
+                              [TT, FA, FA, TT, FA, FA, TT, FA, FA, TT, FA, FA]*6,
+                              [FA, TT, FA, FA, TT, FA, FA, TT, FA, FA, TT]*6,
+                              [FA, FA, TT, FA, FA, TT, FA, FA, TT, FA]*6,
+                              [TT, FA, FA, TT, FA, FA, TT, FA, FA]*6,
+                              [FA, TT, FA, FA, TT, FA, FA, TT]*6,
+                              [FA, FA, TT, FA, FA, TT, FA]*6,
+                              [TT, FA, FA, TT, FA, FA]*6,
+                              [FA, TT, FA, FA, TT]*6,
+                              [FA, FA, TT, FA]*6,
+                              [TT, FA, FA]*6,
+                              [FA, TT]*6,
+                              [FA]*6,
+                              [TT]]
+    core_lattice.center=(0.0,0.0)
+    core_lattice_cell = openmc.Cell(fill=core_lattice)
+    core_lattice_universe = openmc.Universe(cells=[core_lattice_cell])
+    
+    return core_lattice_universe
+
+def reflector(Core, Gap, SS, Be_Barrel):
+    
+    #Measurements from Schnitzler et al. 2007
+    inner_gap_inner_radius = 29.5275
+    inner_gap_outer_radius = 29.8450
+    stainless_steel_outer_radius = 30.1625
+    middle_gap_outer_radius = 30.48
+    be_barrel_outer_radius = 33.3375
+    outer_gap_outer_radius = 33.6550
+    
+    # OpenMC Geometry:
+    inner_gap_inner = openmc.ZCylinder(r=inner_gap_inner_radius)
+    inner_gap_outer = openmc.ZCylinder(r=inner_gap_outer_radius)
+    wrapper = openmc.ZCylinder(r=stainless_steel_outer_radius)
+    middle_gap = openmc.ZCylinder(r=middle_gap_outer_radius)
+    be_barrel = openmc.ZCylinder(r=be_barrel_outer_radius)
+    outer_gap = openmc.ZCylinder(r=outer_gap_outer_radius)
+    
+    # OpenMC Cells and Universes:
+    core_cell = openmc.Cell(region=-inner_gap_inner, fill=Core)
+    inner_gap_cell = openmc.Cell(region = -inner_gap_outer & + inner_gap_inner, fill=Gap)
+    stainless_steel_wrapper_cell = openmc.Cell (region = +inner_gap_outer & -wrapper, fill=SS)
+    middle_gap_cell = openmc.Cell(region = +wrapper & -middle_gap, fill=Gap)
+    be_barrel_cell = openmc.Cell(region = +middle_gap & -be_barrel, fill=Be_Barrel)
+    outer_gap_cell = openmc.Cell(region = +be_barrel & -outer_gap, fill=Gap)
+    
+    reflector_universe = openmc.Universe(cells=[core_cell, inner_gap_cell,
+                                                stainless_steel_wrapper_cell,
+                                                middle_gap_cell, be_barrel_cell,
+                                                outer_gap_cell])
+    
+    return reflector_universe
+
+
+
 
 def main():
     # plot a sample geometry by material type
@@ -153,6 +251,28 @@ def main():
     plt.savefig('tie_tube_element_by_material.png')
     tie_tube_geom.plot(pixels=(800, 800), width=(3, 3), color_by='cell')
     plt.savefig('tie_tube_element_by_cell.png')
+
+    #I FILL THE Be CELL WITH H BECAUSE I CAN'T MAKE MATERIALS TO ADD Be (!!!)
+    beryllium_assembly_geom = openmc.Geometry(beryllium_assembly(hydrogen, ZrC))
+    beryllium_assembly_geom.plot(pixels=(800, 800), width=(3, 3), color_by='material')
+    plt.savefig('beryllium_assembly.png')
+
+    FA = fuel_assembly(hydrogen, ZrC, graphite_fuel)
+    TT = tie_tube(hydrogen,hydrogen,inconel,ZrH,ZrC,ZrC_insulator,graphite)
+    BE = beryllium_assembly(hydrogen, ZrC)
+
+    core_lattice_SNRE_geom = openmc.Geometry(core_lattice_SNRE(TT, FA, BE))
+    core_lattice_SNRE_geom.plot(pixels=(800, 800), width=(60, 60), color_by='material')
+    plt.savefig('SNRE_full_core_lattice.png')
+
+
+    core = core_lattice_SNRE(TT,FA,BE)
+
+
+    # Filled with random materials because I can't make mats...
+    reflector_geom = openmc.Geometry(reflector(core, hydrogen, inconel, graphite))
+    reflector_geom.plot(pixels=(800, 800), width=(70, 70), color_by='material')
+    plt.savefig('SNRE_full_core_with_inner_reflector.png')
 
 
 if __name__ == '__main__':
