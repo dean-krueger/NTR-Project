@@ -131,6 +131,14 @@ def zirconium_carbide_insulator(ZrC):
     insulator.metadata['mat_number'] = 10
     return insulator
 
+def SS316LN_mat():
+    nucvec = {50000000:0.030, 60000000:0.030, 70000000:0.160, 140000000:1.0, 150000000:0.030, 160000000:0.020, 240000000:17.250, 250000000:2.00 , 260000000:64.830, 270000000:0.100, 280000000:12.00, 410000000:0.050, 420000000:2.5}
+    SS316LN = Material(nucvec)
+    SS316LN.density = 7.93
+    SS316LN=SS316LN.expand_elements()
+    SS316LN.metadata['citation']='GilbertHandbookITERCCFE_2016'
+    SS316LN.metadata['mat_number'] = 15
+    return SS316LN
 
 def mix_UZrC_graphite(ZrC_wo, UC_wo, C_wo, void_percent, U_enrichment=0.93):
     """
@@ -176,6 +184,7 @@ def main():
     H_STP = hydrogen_STP()
     ZrC_insulator = zirconium_carbide_insulator(ZrC)
     CuB = copper_boron(Cu, B, C)
+    ss316l = SS316LN_mat()
 
     # print em out and have a look
     print(C)
@@ -190,6 +199,7 @@ def main():
     print(H_STP)
     print(ZrC_insulator)
     print(CuB)
+    print(ss316l)
 
     # make the library and export to xml
     lib = MaterialLibrary()
@@ -205,6 +215,7 @@ def main():
     lib['zirconium_carbide_insulator'] = ZrC_insulator
     lib['Beryllium'] = Be
     lib['copper_boron'] = CuB
+    lib['SS316L'] = ss316l
 
     lib.write_openmc('materials.xml')
 
