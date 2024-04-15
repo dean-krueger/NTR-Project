@@ -330,8 +330,13 @@ def full_core(inner_reflector_universe, poison_mat, reflector_mat, bolt_mat, cor
     # OpenMC Geometry:
     inner_reflector_outer_boundary = openmc.ZCylinder(r=inner_reflector_outer_radius)
     outer_reflector_outer_boundary = openmc.ZCylinder(r=reflector_outer_radius)
+
     core_bottom = openmc.ZPlane(z0=-core_height/2)
     core_top = openmc.ZPlane(z0=core_height/2)
+
+    outer_reflector_outer_boundary.boundary_type = 'vacuum'
+    core_bottom.boundary_type = 'vacuum'
+    core_top.boundary_type = 'vacuum'
     
     # OpenMC Cells and Universes:
     reflector_universe = reflector(poison_mat, reflector_mat, bolt_mat, clocking=drum_clocking)
