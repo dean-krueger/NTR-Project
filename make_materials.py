@@ -132,7 +132,20 @@ def zirconium_carbide_insulator(ZrC):
     return insulator
 
 def SS316LN_mat():
-    nucvec = {50000000:0.030, 60000000:0.030, 70000000:0.160, 140000000:1.0, 150000000:0.030, 160000000:0.020, 240000000:17.250, 250000000:2.00 , 260000000:64.830, 270000000:0.100, 280000000:12.00, 410000000:0.050, 420000000:2.5}
+    nucvec = {50000000:0.030, 
+              60000000:0.030, 
+              70000000:0.160, 
+              140000000:1.0, 
+              150000000:0.030, 
+              160000000:0.020, 
+              240000000:17.250, 
+              250000000:2.00 , 
+              260000000:64.830, 
+              270000000:0.100, 
+              280000000:12.00, 
+              410000000:0.050, 
+              420000000:2.5}
+    
     SS316LN = Material(nucvec)
     SS316LN.density = 7.93
     SS316LN=SS316LN.expand_elements()
@@ -140,7 +153,8 @@ def SS316LN_mat():
     SS316LN.metadata['mat_number'] = 15
     return SS316LN
 
-def mix_UZrC_graphite(ZrC_wo, UC_wo, C_wo, void_percent, U_enrichment=0.93):
+def mix_UZrC_graphite(ZrC_wo, UC_wo, C_wo, void_percent, mat_number,
+                      U_enrichment=0.93):
     """
     UC_wo: weight percent UC
     ZrC_wo: weight percent ZrC
@@ -162,7 +176,7 @@ def mix_UZrC_graphite(ZrC_wo, UC_wo, C_wo, void_percent, U_enrichment=0.93):
     UZrC_graphite = mix.mix_by_mass()
 
     UZrC_graphite.density = UZrC_graphite.density*(1-void_percent)
-    UZrC_graphite.metadata['mat_number'] = 6
+    UZrC_graphite.metadata['mat_number'] = mat_number
 
     return UZrC_graphite
 
@@ -173,33 +187,31 @@ def main():
     C = carbon()
     Zr = zirconium()
     U = uranium(0.93)
-    Be = beryllium()
-    Cu = copper()
-    B = boron()
     ZrC = zirconium_carbide(Zr, C)
     UC = uranium_carbide(U, C)
-    UZrC = mix_UZrC_graphite(38.4, 2.8, 58.5, 0.117)
+    UZrC70_15 = mix_UZrC_graphite(38.4, 2.8, 58.5, 0.117,6)
+    #the numbers in the table add up to more than 100% for this one
+    #so i reduced the free carbon percentage because that makes sense
+    UZrC70_20 = mix_UZrC_graphite(46.1, 2.7, 51.2, 0.114, 16) 
+    UZrC70_30 = mix_UZrC_graphite(59.7, 2.4, 37.7, 0.113, 17)
+    UZrC435_30 = mix_UZrC_graphite(52.7, 13.1, 33.7, 0.155, 18)
+    UZrC435_35 = mix_UZrC_graphite(57.7, 12.6, 29.2, 0.150, 19)
+    UZrC435_40 = mix_UZrC_graphite(63.4, 11.8, 24.7, 0.135, 20)
+    UZrC435_45 = mix_UZrC_graphite(67.6, 11.2, 20.8, 0.140, 21)
     ZrH2 = zirconium_hydride_II()
     Inc_718 = inconel_718()
     H_STP = hydrogen_STP()
-    ZrC_insulator = zirconium_carbide_insulator(ZrC)
-    CuB = copper_boron(Cu, B, C)
-    ss316l = SS316LN_mat()
 
     # print em out and have a look
     print(C)
     print(Zr)
     print(U)
-    print(Be)
     print(ZrC)
     print(UC)
-    print(UZrC)
+    print(UZrC70_15)
     print(ZrH2)
     print(Inc_718)
     print(H_STP)
-    print(ZrC_insulator)
-    print(CuB)
-    print(ss316l)
 
     # make the library and export to xml
     lib = MaterialLibrary()
@@ -208,14 +220,17 @@ def main():
     lib['zirconium_carbide'] = ZrC
     lib['Uranium_cabide_0.93'] = UC
     # these numbers correspond to headers in taub table 6
-    lib['graphite_fuel_70U_15C'] = UZrC
+    lib['graphite_fuel_70U_15C'] = UZrC70_15
+    lib['graphite_fuel_70U_20C'] = UZrC70_20
+    lib['graphite_fuel_70U_30C'] = UZrC70_30
+    lib['graphite_fuel_435U_30C'] = UZrC435_30
+    lib['graphite_fuel_435U_35C'] = UZrC435_35
+    lib['graphite_fuel_435U_40C'] = UZrC435_40
+    lib['graphite_fuel_435U_45C'] = UZrC435_45
+    lib['graphite_fuel_']
     lib['zirconium_hydride_II'] = ZrH2
     lib['inconel-718'] = Inc_718
     lib['Hydrogen STP'] = H_STP
-    lib['zirconium_carbide_insulator'] = ZrC_insulator
-    lib['Beryllium'] = Be
-    lib['copper_boron'] = CuB
-    lib['SS316L'] = ss316l
 
     lib.write_openmc('materials.xml')
 
