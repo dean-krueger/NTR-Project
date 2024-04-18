@@ -289,7 +289,7 @@ def core_lattice_SNRE(tie_tube_universe, fuel_assembly_universe, beryllium_unive
     
     return core_lattice_universe
 
-def inner_reflector(Core, Gap, SS, Be_Barrel):
+def inner_reflector(Core, Gap, SS, Be_Barrel, height):
     
     #Measurements from Schnitzler et al. 2007
     inner_gap_inner_radius = 29.5275
@@ -306,14 +306,16 @@ def inner_reflector(Core, Gap, SS, Be_Barrel):
     middle_gap = openmc.ZCylinder(r=middle_gap_outer_radius)
     be_barrel = openmc.ZCylinder(r=be_barrel_outer_radius)
     outer_gap = openmc.ZCylinder(r=outer_gap_outer_radius)
+    top = openmc.ZPlane(z0=height/2)
+    bottom = openmc.ZPlane(z0=-height/2)
     
     # OpenMC Cells and Universes:
-    core_cell = openmc.Cell(region=-inner_gap_inner, fill=Core)
-    inner_gap_cell = openmc.Cell(region = -inner_gap_outer & + inner_gap_inner, fill=Gap)
-    stainless_steel_wrapper_cell = openmc.Cell (region = +inner_gap_outer & -wrapper, fill=SS)
-    middle_gap_cell = openmc.Cell(region = +wrapper & -middle_gap, fill=Gap)
-    be_barrel_cell = openmc.Cell(region = +middle_gap & -be_barrel, fill=Be_Barrel)
-    outer_gap_cell = openmc.Cell(region = +be_barrel & -outer_gap, fill=Gap)
+    core_cell = openmc.Cell(region=-inner_gap_inner &-top &+bottom, fill=Core)
+    inner_gap_cell = openmc.Cell(region = -inner_gap_outer & + inner_gap_inner&-top &+bottom, fill=Gap)
+    stainless_steel_wrapper_cell = openmc.Cell (region = +inner_gap_outer & -wrapper&-top &+bottom, fill=SS)
+    middle_gap_cell = openmc.Cell(region = +wrapper & -middle_gap&-top &+bottom, fill=Gap)
+    be_barrel_cell = openmc.Cell(region = +middle_gap & -be_barrel&-top &+bottom, fill=Be_Barrel)
+    outer_gap_cell = openmc.Cell(region = +be_barrel & -outer_gap&-top &+bottom, fill=Gap)
     
     reflector_universe = openmc.Universe(cells=[core_cell, inner_gap_cell,
                                                 stainless_steel_wrapper_cell,
