@@ -187,6 +187,9 @@ def main():
     C = carbon()
     Zr = zirconium()
     U = uranium(0.93)
+    Be = beryllium()
+    Cu = copper()
+    B = boron()
     ZrC = zirconium_carbide(Zr, C)
     UC = uranium_carbide(U, C)
     UZrC70_15 = mix_UZrC_graphite(38.4, 2.8, 58.5, 0.117,6)
@@ -201,6 +204,9 @@ def main():
     ZrH2 = zirconium_hydride_II()
     Inc_718 = inconel_718()
     H_STP = hydrogen_STP()
+    ZrC_insulator = zirconium_carbide_insulator(ZrC)
+    CuB = copper_boron(Cu, B, C)
+    ss316l = SS316LN_mat()
 
     # print em out and have a look
     print(C)
@@ -231,7 +237,10 @@ def main():
     lib['zirconium_hydride_II'] = ZrH2
     lib['inconel-718'] = Inc_718
     lib['Hydrogen STP'] = H_STP
-
+    lib['zirconium_carbide_insulator'] = ZrC_insulator
+    lib['Beryllium'] = Be
+    lib['copper_boron'] = CuB
+    lib['SS316L'] = ss316l
     lib.write_openmc('materials.xml')
 
 
