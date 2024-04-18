@@ -16,6 +16,8 @@ def get_material(materials, name):
     for material in materials:
         if material.name == name:
             return material
+    
+    print(f'MATERIAL {name} NOT FOUND !!!')
 
 
 def fuel_assembly(propellent, clad, fuel):
@@ -69,6 +71,7 @@ def fuel_assembly(propellent, clad, fuel):
                                                     fuel_assembly_lattice_cell])
 
     return fuel_assembly_universe
+
 
 
 def tie_tube(hydrogen_inner, hydrogen_outer, inconel, ZrH, ZrC, ZrC_insulator, graphite):
@@ -323,6 +326,7 @@ def inner_reflector(Core, Gap, SS, Be_Barrel):
     return reflector_universe
 
 def full_core(inner_reflector_universe, poison_mat, reflector_mat, bolt_mat, core_height, drum_clocking):
+
     inner_reflector_outer_radius = 33.6550
     reflector_outer_radius = inner_reflector_outer_radius + 14.7
     
@@ -349,6 +353,66 @@ def full_core(inner_reflector_universe, poison_mat, reflector_mat, bolt_mat, cor
     
     return full_core_universe
 
+def get_model(height, clocking, graphite_fuel='graphite_fuel_435U_30C'):
+    """
+    returns a full core with the given height, drum clocking, and fuel,
+    distributed source over core region, and shannon entropy mesh.
+    """
+    inner_gap_inner_radius = 29.5275
+
+    materials = openmc.Materials.from_xml('materials.xml')
+
+    # changes these materials as necessary, probably only fuel
+    graphite_fuel = get_material(materials, graphite_fuel)
+    hydrogen = get_material(materials, 'Hydrogen STP')
+    ZrC = get_material(materials, "zirconium_carbide")
+    inconel = get_material(materials, "inconel-718")
+    ZrH = get_material(materials, "zirconium_hydride_II")
+    ZrC_insulator = get_material(materials, "zirconium_carbide_insulator")
+    graphite = get_material(materials, "graphite_carbon")
+    beryllium = get_material(materials, 'Beryllium')
+    SS316L = get_material(materials, "SS316L")
+    poison = get_material(materials, "copper_boron")
+
+
+    # make all the sub elements of the reactor
+    FA = fuel_assembly(hydrogen, ZrC, graphite_fuel)
+    TT = tie_tube(hydrogen,hydrogen,inconel,ZrH,ZrC,ZrC_insulator,graphite)
+    BE = beryllium_assembly(beryllium, ZrC)
+
+    core_lattice_SNRE_geom = openmc.Geometry(core_lattice_SNRE(TT, FA, BE))
+    core_lattice_SNRE_geom.plot(pixels=(800, 800), width=(60, 60),
+                                color_by='material')
+
+    core = core_lattice_SNRE(TT,FA,BE)
+    inner_reflector_universe = inner_reflector(core, hydrogen, SS316L, beryllium)
+
+    # combine them into a full core
+    full_core_geom = openmc.Geometry(full_core(inner_reflector_universe, poison, 
+                                            beryllium, inconel, height, clocking))
+    
+    #setup shannon entropy
+    lower_left = (-inner_gap_inner_radius, -inner_gap_inner_radius, -height/2)
+    upper_right = (inner_gap_inner_radius, inner_gap_inner_radius, height/2)
+
+    entropy_mesh = openmc.RegularMesh()
+    entropy_mesh.lower_left = lower_left
+    entropy_mesh.upper_right = upper_right
+    entropy_mesh.dimension = [30,30,10]
+
+    #setup source sampling
+    uniform_dist = openmc.stats.Box(lower_left, upper_right, 
+                                    only_fissionable = True)
+
+    settings = openmc.Settings()
+    settings.entropy_mesh = entropy_mesh
+    settings.source = openmc.IndependentSource(space=uniform_dist)
+
+    model = openmc.Model(materials=materials, settings=settings, 
+                         geometry=full_core_geom)
+    
+    return model
+
 
 def main():
     # plot a sample geometry by material type
@@ -367,9 +431,9 @@ def main():
     SS316L = get_material(materials, "SS316L")
 
     fuel_assembly_geom = openmc.Geometry(fuel_assembly(hydrogen, ZrC, graphite_fuel))
-    fuel_assembly_geom.plot(pixels=(800, 800), width=(3, 3), color_by='material')
+    fuel_assembly_geom.plot(pixels=(1200, 1200), width=(3, 3), color_by='material')
     plt.savefig('fuel_element_by_material.png')
-    fuel_assembly_geom.plot(pixels=(800, 800), width=(3, 3), color_by='cell')
+    fuel_assembly_geom.plot(pixels=(1200, 1200), width=(3, 3), color_by='cell')
     plt.savefig('fuel_element_by_cell.png')
 
     tie_tube_geom = openmc.Geometry(tie_tube(hydrogen,hydrogen,inconel,ZrH,ZrC,ZrC_insulator,graphite))
