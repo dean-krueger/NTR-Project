@@ -27,9 +27,9 @@ core_lattice_SNRE_geom.plot(pixels=(800, 800), width=(60, 60), color_by='materia
 plt.savefig('SNRE_full_lattice.png')
 
 core = core_lattice_SNRE(TT,FA,BE)
-inner_reflector_universe = inner_reflector(core, hydrogen, SS316L, beryllium, height)
+inner_reflector_universe = inner_reflector(core, hydrogen, SS316L, beryllium)
 
-full_core_geom = openmc.Geometry(full_core(inner_reflector_universe, poison, beryllium, inconel, height, 180))
+full_core_geom = openmc.Geometry(full_core(inner_reflector_universe, poison, beryllium, inconel, height, 0))
 full_core_geom.plot(pixels=(800, 800), width=(100, 100), color_by='material')
 plt.savefig('SNRE_full_core_radial_cross_section.png')
 full_core_geom.export_to_xml()
