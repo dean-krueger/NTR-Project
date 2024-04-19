@@ -1,7 +1,7 @@
-import core_template
+import geometry_definitions as gd
 import openmc
 
-model = core_template.get_model(89,90)
+model = gd.get_model(89,90)
 
 model.settings.batches = 30
 model.settings.particles = 100000
