@@ -16,60 +16,96 @@ def get_material(materials, name):
     for material in materials:
         if material.name == name:
             return material
+    
+    print(f'MATERIAL {name} NOT FOUND !!!')
+
+def boreholes(origin_list, propellent, clad):
+    
+    propellant_channel_diameter = 0.2565
+    propellant_channel_inner_cladding_thickness = 0.01
+
+    cells = []
+    
+    fuel_region = None
+    channel_region = None
+    clad_region = None
+
+    for origin in origin_list:
+        inner_cyl = openmc.ZCylinder(origin[0], origin[1],
+                                        propellant_channel_diameter/2)
+        
+        outer_cyl = openmc.ZCylinder(origin[0], origin[1],
+                                    (propellant_channel_diameter+
+                                    propellant_channel_inner_cladding_thickness)/
+                                    2)
+        if fuel_region is not None:
+            fuel_region = fuel_region | +outer_cyl
+            channel_region = channel_region | (-outer_cyl & +inner_cyl)
+            borehole_region = borehole_region | -inner_cyl
+        else:
+            fuel_region = +outer_cyl
+            channel_region = -outer_cyl & +inner_cyl
+            borehole_region = -inner_cyl
+        
+    borehole = openmc.Cell(region = borehole_region, fill = propellent)
+    cladding = openmc.Cell(region= channel_region, fill = clad)
+
+
+    return borehole, cladding, fuel_region
+
 
 
 def fuel_assembly(propellent, clad, fuel):
     # build a single element
     # Measurements from Schnitzler et al. 2012
-    propellant_channel_diameter = 0.2565
-    propellant_channel_inner_cladding_thickness = 0.01
-    propellant_channel_pitch = 0.4089
+
+    pitch = 0.4089
+    y_pitch = pitch*np.cos(np.deg2rad(30))
     assembly_cladding_thickness = 0.005
     flat_to_flat = 1.905
     flat_to_flat_fuel = flat_to_flat - assembly_cladding_thickness
     assembly_edge_length = 0.5*flat_to_flat/np.cos(np.deg2rad(30))
     fuel_edge_length = 0.5*flat_to_flat_fuel/np.cos(np.deg2rad(30))
 
-    # OpenMC Geometry
-    borehole = openmc.ZCylinder(r=propellant_channel_diameter/2)
-    borehole_inner_cladding = openmc.ZCylinder(r=propellant_channel_diameter/2
-                                               - propellant_channel_inner_cladding_thickness)
     fuel_assembly = openmc.model.HexagonalPrism(
         orientation='x', edge_length=fuel_edge_length)
     fuel_assembly_cladding = openmc.model.HexagonalPrism(
         orientation='x', edge_length=assembly_edge_length)
 
-    # OpenMC Cells and Universes
-    propellant_channel_interior = openmc.Cell(
-        region=-borehole_inner_cladding, fill=propellent)
-    propellant_channel_cladding = openmc.Cell(
-        region=-borehole & +borehole_inner_cladding, fill=clad)
-    propellant_channel_outer_fuel = openmc.Cell(region=+borehole, fill=fuel)
-    propellant_channel = openmc.Universe(cells=(propellant_channel_interior, propellant_channel_cladding,
-                                                propellant_channel_outer_fuel))
-    fuel_assembly_cell = openmc.Cell(region=-fuel_assembly, fill=fuel)
-    fuel_assembly_cladding_cell = openmc.Cell(
-        region=+fuel_assembly & -fuel_assembly_cladding, fill=clad)
+    # Borehole Cells
+    origin_list = [(0,0,0),
+        (-pitch*2,0,0),
+        (-pitch,0,0),
+        (pitch,0,0),
+        (2*pitch,0,0),
+        (-3/2*pitch, y_pitch, 0),
+        (-1/2*pitch, y_pitch, 0),
+        (1/2*pitch, y_pitch, 0),
+        (3/2*pitch, y_pitch, 0),
+        (-pitch, 2*y_pitch, 0),
+        (0, 2*y_pitch, 0),
+        (pitch, 2*y_pitch, 0),
+        (-3/2*pitch, -y_pitch, 0),
+        (-1/2*pitch, -y_pitch, 0),
+        (1/2*pitch, -y_pitch, 0),
+        (3/2*pitch, -y_pitch, 0),
+        (-pitch, -2*y_pitch, 0),
+        (0,-2*y_pitch, 0),
+        (pitch, -2*y_pitch, 0),]
+    
+    borehole_cell, channel_clad_cell, fuel_region = boreholes(origin_list, propellent, clad)
 
-    outer_lattice_universe = openmc.Universe(cells=[fuel_assembly_cell])
+    fuel_region = -fuel_assembly & fuel_region
+    clad_region = -fuel_assembly_cladding & + fuel_assembly
 
-    # OpenMC Fuel Lattice
-    fuel_lattice = openmc.HexLattice()
-    fuel_lattice.orientation = "x"
-    fuel_lattice.outer = outer_lattice_universe
-    fuel_lattice.pitch = (propellant_channel_pitch,)
-    fuel_lattice.universes = [[propellant_channel] *
-                              12, [propellant_channel]*6, [propellant_channel]]
-    fuel_lattice.center = (0.0, 0.0)
+    fuel_cell = openmc.Cell(region=fuel_region, fill=fuel)
+    clad_cell = openmc.Cell(region=clad_region, fill=clad)
 
-    # Full Fuel Asembly
-    fuel_assembly_lattice_cell = openmc.Cell(
-        region=-fuel_assembly, fill=fuel_lattice)
-    fuel_assembly_universe = openmc.Universe(cells=[fuel_assembly_cladding_cell,
-                                                    fuel_assembly_lattice_cell])
-
-    return fuel_assembly_universe
-
+    fuel_assembly_univ = openmc.Universe(cells = [borehole_cell,
+                                                  channel_clad_cell, 
+                                                  fuel_cell,
+                                                  clad_cell])
+    return fuel_assembly_univ
 
 def tie_tube(hydrogen_inner, hydrogen_outer, inconel, ZrH, ZrC, ZrC_insulator, graphite):
     
@@ -323,6 +359,7 @@ def inner_reflector(Core, Gap, SS, Be_Barrel):
     return reflector_universe
 
 def full_core(inner_reflector_universe, poison_mat, reflector_mat, bolt_mat, core_height, drum_clocking):
+
     inner_reflector_outer_radius = 33.6550
     reflector_outer_radius = inner_reflector_outer_radius + 14.7
     
@@ -349,6 +386,66 @@ def full_core(inner_reflector_universe, poison_mat, reflector_mat, bolt_mat, cor
     
     return full_core_universe
 
+def get_model(height, clocking, graphite_fuel='graphite_fuel_435U_30C'):
+    """
+    returns a full core with the given height, drum clocking, and fuel,
+    distributed source over core region, and shannon entropy mesh.
+    """
+    inner_gap_inner_radius = 29.5275
+
+    materials = openmc.Materials.from_xml('materials.xml')
+
+    # changes these materials as necessary, probably only fuel
+    graphite_fuel = get_material(materials, graphite_fuel)
+    hydrogen = get_material(materials, 'Hydrogen STP')
+    ZrC = get_material(materials, "zirconium_carbide")
+    inconel = get_material(materials, "inconel-718")
+    ZrH = get_material(materials, "zirconium_hydride_II")
+    ZrC_insulator = get_material(materials, "zirconium_carbide_insulator")
+    graphite = get_material(materials, "graphite_carbon")
+    beryllium = get_material(materials, 'Beryllium')
+    SS316L = get_material(materials, "SS316L")
+    poison = get_material(materials, "copper_boron")
+
+
+    # make all the sub elements of the reactor
+    FA = fuel_assembly(hydrogen, ZrC, graphite_fuel)
+    TT = tie_tube(hydrogen,hydrogen,inconel,ZrH,ZrC,ZrC_insulator,graphite)
+    BE = beryllium_assembly(beryllium, ZrC)
+
+    core_lattice_SNRE_geom = openmc.Geometry(core_lattice_SNRE(TT, FA, BE))
+    core_lattice_SNRE_geom.plot(pixels=(800, 800), width=(60, 60),
+                                color_by='material')
+
+    core = core_lattice_SNRE(TT,FA,BE)
+    inner_reflector_universe = inner_reflector(core, hydrogen, SS316L, beryllium)
+
+    # combine them into a full core
+    full_core_geom = openmc.Geometry(full_core(inner_reflector_universe, poison, 
+                                            beryllium, inconel, height, clocking))
+    
+    #setup shannon entropy
+    lower_left = (-inner_gap_inner_radius, -inner_gap_inner_radius, -height/2)
+    upper_right = (inner_gap_inner_radius, inner_gap_inner_radius, height/2)
+
+    entropy_mesh = openmc.RegularMesh()
+    entropy_mesh.lower_left = lower_left
+    entropy_mesh.upper_right = upper_right
+    entropy_mesh.dimension = [30,30,10]
+
+    #setup source sampling
+    uniform_dist = openmc.stats.Box(lower_left, upper_right, 
+                                    only_fissionable = True)
+
+    settings = openmc.Settings()
+    settings.entropy_mesh = entropy_mesh
+    settings.source = openmc.IndependentSource(space=uniform_dist)
+
+    model = openmc.Model(materials=materials, settings=settings, 
+                         geometry=full_core_geom)
+    
+    return model
+
 
 def main():
     # plot a sample geometry by material type
@@ -367,9 +464,9 @@ def main():
     SS316L = get_material(materials, "SS316L")
 
     fuel_assembly_geom = openmc.Geometry(fuel_assembly(hydrogen, ZrC, graphite_fuel))
-    fuel_assembly_geom.plot(pixels=(800, 800), width=(3, 3), color_by='material')
+    fuel_assembly_geom.plot(pixels=(1200, 1200), width=(3, 3), color_by='material')
     plt.savefig('fuel_element_by_material.png')
-    fuel_assembly_geom.plot(pixels=(800, 800), width=(3, 3), color_by='cell')
+    fuel_assembly_geom.plot(pixels=(1200, 1200), width=(3, 3), color_by='cell')
     plt.savefig('fuel_element_by_cell.png')
 
     tie_tube_geom = openmc.Geometry(tie_tube(hydrogen,hydrogen,inconel,ZrH,ZrC,ZrC_insulator,graphite))
