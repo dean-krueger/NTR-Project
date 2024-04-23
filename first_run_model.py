@@ -13,11 +13,12 @@ core_height = 89
 # Generate the Model:
 model = gd.get_model(core_height ,critical_insertion_angle)
 
-model.settings.batches = 20
-model.settings.particles = 10_000
-model.settings.inactive = 10
+model.settings.batches = 50
+model.settings.particles = 10_000_000
+model.settings.inactive = 20
 model.settings.temperature = {'default':2500}
 model.settings.photon_transport = True
+model.settings.statepoint = {'batches': [30,40,50,60,70,80,90,100]}
 model.settings.trigger_batch_interval = 10
 model.settings.trigger_max_batches = 100
 
@@ -44,6 +45,7 @@ for cell in model.geometry.get_all_material_cells().values():
 # Set up Filters and triggers
 fuel_cell_filter = openmc.DistribcellFilter(fuel_cell_id)
 energy_filter = openmc.EnergyFilter(energy_bins)
+n_filter = openmc.ParticleFilter('neutron')
 axial_mesh = openmc.CylindricalMesh(r_grid=[0,inner_gap_inner_radius],
                                     z_grid=np.linspace(-core_height/2,core_height/2, 12),
                                     phi_grid=[0,2*np.pi])
@@ -59,19 +61,17 @@ heating_tally.scores = ['kappa-fission']
 heating_tally.triggers = [heating_trigger]
 
 flux_tally = openmc.Tally(name="Flux")
-flux_tally.filters = [fuel_cell_filter, energy_filter]
+flux_tally.filters = [fuel_cell_filter, energy_filter, n_filter]
 flux_tally.scores = ['flux']
 flux_tally.triggers = [flux_trigger]
 
 axial_flux_tally = openmc.Tally(name='Axial Flux Tally')
-axial_flux_tally.filters = [axial_mesh_filter, energy_filter]
+axial_flux_tally.filters = [axial_mesh_filter, energy_filter, n_filter]
 axial_flux_tally.scores = ['flux']
 
 model.tallies = [heating_tally, flux_tally, axial_flux_tally]
 
 model.export_to_model_xml()
-
-statepoint = model.run(threads=18)
 
 # %%
 
