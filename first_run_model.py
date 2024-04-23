@@ -21,6 +21,7 @@ model.settings.photon_transport = True
 model.settings.statepoint = {'batches': [30,40,50,60,70,80,90,100]}
 model.settings.trigger_batch_interval = 10
 model.settings.trigger_max_batches = 100
+model.settings.trigger_active = True
 
 # Create Initial Source:
 # Measurements from Schnitzler 2007
