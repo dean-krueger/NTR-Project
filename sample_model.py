@@ -1,11 +1,11 @@
 import geometry_definitions as gd
 import openmc
 
-model = gd.get_model(89,90)
+model = gd.get_model(89,100)
 
 model.settings.batches = 30
-model.settings.particles = 100000
-model.settings.inactive = 10
+model.settings.particles = 1000000
+model.settings.inactive = 20
 model.settings.temperature = {'default':2500}
 
 #set up a distribcell filter over fuel elements
