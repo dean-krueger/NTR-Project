@@ -70,7 +70,7 @@ heating_tally_inter_u.scores = ['kappa-fission']
 heating_tally_inter_u.triggers = [heating_trigger]
 
 heating_tally_high_u = openmc.Tally(name='high u Heating')
-heating_tally_high_u.filters = [low_u_fuel_filter]
+heating_tally_high_u.filters = [high_u_fuel_filter]
 heating_tally_high_u.scores = ['kappa-fission']
 heating_tally_high_u.triggers = [heating_trigger]
 
