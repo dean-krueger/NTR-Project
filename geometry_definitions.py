@@ -286,7 +286,7 @@ def beryllium_assembly(Be, ZrC):
     
     return beryllium_assembly_universe
 
-def core_lattice_SNRE(tie_tube_universe, fuel_assembly_universe, beryllium_universe):
+def core_lattice_SNRE(tie_tube_universe, fuel_assembly_universe, low_fuel_assembly, intermediate_fuel_assembly, beryllium_universe):
     
     # Measurements from Schnitzler et al. 2012
     assembly_pitch = 1.905
@@ -295,15 +295,17 @@ def core_lattice_SNRE(tie_tube_universe, fuel_assembly_universe, beryllium_unive
     # Makes things easier to type:
     TT = tie_tube_universe
     FA = fuel_assembly_universe
+    LFA = low_fuel_assembly
+    IFA = intermediate_fuel_assembly
     BE = beryllium_universe
     
     core_lattice = openmc.HexLattice()
     core_lattice.orientation = "y"
     core_lattice.pitch = (assembly_pitch,)
     core_lattice.universes = [[BE, BE, BE, BE, BE, BE, BE, BE, BE, BE, BE, BE, BE, BE, BE, BE, BE, BE]*6,
-                              [BE, BE, BE, BE, BE, BE, BE, FA, FA, FA, FA, BE, BE, BE, BE, BE, BE]*6,
-                              [BE, BE, BE, FA, FA, FA, FA, FA, TT, FA, FA, FA, FA, FA, BE, BE]*6,
-                              [BE, FA, FA, TT, FA, FA, TT, FA, FA, TT, FA, FA, TT, FA, FA]*6,
+                              [BE, BE, BE, BE, BE, BE, BE, LFA, LFA, LFA, LFA, BE, BE, BE, BE, BE, BE]*6,
+                              [BE, BE, BE, IFA, FA, FA, FA, FA, TT, FA, FA, FA, FA, IFA, BE, BE]*6,
+                              [BE, LFA, FA, TT, FA, FA, TT, FA, FA, TT, FA, FA, TT, FA, LFA]*6,
                               [FA, TT, FA, FA, TT, FA, FA, TT, FA, FA, TT, FA, FA, TT]*6,
                               [FA, FA, TT, FA, FA, TT, FA, FA, TT, FA, FA, TT, FA]*6,
                               [TT, FA, FA, TT, FA, FA, TT, FA, FA, TT, FA, FA]*6,
@@ -315,9 +317,9 @@ def core_lattice_SNRE(tie_tube_universe, fuel_assembly_universe, beryllium_unive
                               [TT, FA, FA, TT, FA, FA]*6,
                               [FA, TT, FA, FA, TT]*6,
                               [FA, FA, TT, FA]*6,
-                              [TT, FA, FA]*6,
-                              [FA, TT]*6,
-                              [FA]*6,
+                              [TT, IFA, IFA]*6,
+                              [LFA, TT]*6,
+                              [LFA]*6,
                               [TT]]
     core_lattice.center=(0.0,0.0)
     core_lattice_cell = openmc.Cell(fill=core_lattice)
@@ -386,7 +388,9 @@ def full_core(inner_reflector_universe, poison_mat, reflector_mat, bolt_mat, cor
     
     return full_core_universe
 
-def get_model(height, clocking, graphite_fuel='graphite_fuel_435U_30C'):
+def get_model(height, clocking, graphite_fuel='graphite_fuel_435U_30C',
+               low_U_graphite_fuel = "graphite_fuel_70U_15C", 
+               intermediate_U_fuel="graphite_fuel_intermediate_loading"):
     """
     returns a full core with the given height, drum clocking, and fuel,
     distributed source over core region, and shannon entropy mesh.
@@ -397,6 +401,8 @@ def get_model(height, clocking, graphite_fuel='graphite_fuel_435U_30C'):
 
     # changes these materials as necessary, probably only fuel
     graphite_fuel = get_material(materials, graphite_fuel)
+    low_U_graphite_fuel = get_material(materials, low_U_graphite_fuel)
+    intermediate_U_fuel = get_material(materials, intermediate_U_fuel)
     hydrogen = get_material(materials, 'Hydrogen STP')
     ZrC = get_material(materials, "zirconium_carbide")
     inconel = get_material(materials, "inconel-718")
@@ -410,14 +416,12 @@ def get_model(height, clocking, graphite_fuel='graphite_fuel_435U_30C'):
 
     # make all the sub elements of the reactor
     FA = fuel_assembly(hydrogen, ZrC, graphite_fuel)
+    LFA = fuel_assembly(hydrogen, ZrC, low_U_graphite_fuel)
+    IFA = fuel_assembly(hydrogen, ZrC, intermediate_U_fuel)
     TT = tie_tube(hydrogen,hydrogen,inconel,ZrH,ZrC,ZrC_insulator,graphite)
     BE = beryllium_assembly(beryllium, ZrC)
 
-    core_lattice_SNRE_geom = openmc.Geometry(core_lattice_SNRE(TT, FA, BE))
-    core_lattice_SNRE_geom.plot(pixels=(800, 800), width=(60, 60),
-                                color_by='material')
-
-    core = core_lattice_SNRE(TT,FA,BE)
+    core = core_lattice_SNRE(TT,FA, LFA, IFA, BE)
     inner_reflector_universe = inner_reflector(core, hydrogen, SS316L, beryllium)
 
     # combine them into a full core

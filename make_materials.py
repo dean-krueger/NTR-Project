@@ -201,6 +201,8 @@ def main():
     UZrC435_35 = mix_UZrC_graphite(57.7, 12.6, 29.2, 0.150, 19)
     UZrC435_40 = mix_UZrC_graphite(63.4, 11.8, 24.7, 0.135, 20)
     UZrC435_45 = mix_UZrC_graphite(67.6, 11.2, 20.8, 0.140, 21)
+    # Edgar made this one up to get fuel loading about halfway in between
+    UZrC250_45 = mix_UZrC_graphite(58, 7.5, 34.5, 0.19, 22)
     ZrH2 = zirconium_hydride_II()
     Inc_718 = inconel_718()
     H_STP = hydrogen_STP()
@@ -233,6 +235,7 @@ def main():
     lib['graphite_fuel_435U_35C'] = UZrC435_35
     lib['graphite_fuel_435U_40C'] = UZrC435_40
     lib['graphite_fuel_435U_45C'] = UZrC435_45
+    lib['graphite_fuel_intermediate_loading'] = UZrC250_45
     lib['graphite_fuel_']
     lib['zirconium_hydride_II'] = ZrH2
     lib['inconel-718'] = Inc_718
